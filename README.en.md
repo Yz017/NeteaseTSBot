@@ -11,6 +11,9 @@
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 [![中文 README](https://img.shields.io/badge/README-%E4%B8%AD%E6%96%87-red)](README.md)
 
+> 🎵 **TSBot (NeteaseTSBot)** is a high-performance multi-platform music bot built for **TeamSpeak (TS / TS3 / TS6)**.  
+> Supports audio parsing and playback from **Netease Cloud Music (网易云音乐)**, **QQ Music**, and **Bilibili (B站)** with an out-of-the-box Web Console.
+
 TSBot is a TeamSpeak based music bot; the `voice-service` primary client connection already supports TS6 (historical env var names remain `TSBOT_TS3_*`). It provides:
 
 - **TeamSpeak voice playback** (connects to TeamSpeak servers and plays audio via `voice-service`; primary client connection supports TS3/TS6)

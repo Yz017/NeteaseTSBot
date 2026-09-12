@@ -11,6 +11,9 @@
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 [![English README](https://img.shields.io/badge/README-English-blue)](README.en.md)
 
+> 🎵 **TSBot (NeteaseTSBot)** 是一个专为 **TeamSpeak (TS / TS3 / TS6)** 打造的高性能多平台音乐点播机器人 (Music Bot)。  
+> 支持 **网易云音乐 (Netease Cloud Music)**、**QQ 音乐** 与 **Bilibili (B站)** 音频解析与点播播放，并配备开箱即用的 Web 控制台与一键式部署方案。
+
 TSBot 是一个基于 TeamSpeak 的音乐机器人；`voice-service` 主客户端连接已支持 TS6（历史环境变量名仍保留 `TSBOT_TS3_*`），提供：
 
 - **TeamSpeak 语音播放**（通过 `voice-service` 连接 TeamSpeak 服务器并播放音频；主客户端连接支持 TS3/TS6）
