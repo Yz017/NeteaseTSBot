@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { apiGet, apiPost } from '../api'
-import { buildNeteaseQueuePayload } from '../utils/queue'
+import { apiDelete, apiGet, apiPost } from '../api'
+import { buildNeteaseQueuePayload, enqueueNeteaseTracks, summarizeBulkEnqueueFailures } from '../utils/queue'
 import { 
   Heart, 
   Play, 
@@ -24,6 +24,7 @@ const PAGE_SIZE = 200
 const error = ref('')
 const likes = ref<any>(null)
 const loading = ref(false)
+const switching = ref(false)
 
 const offset = ref(0)
 const hasMore = ref(false)
@@ -167,6 +168,40 @@ async function addToQueue(song: any) {
   }
 }
 
+async function playAllLikes() {
+  if (switching.value) return
+
+  switching.value = true
+
+  try {
+    const cookie = localStorage.getItem(USER_COOKIE_KEY) || ''
+    if (!cookie) {
+      throw new Error('需要先设置网易云音乐 Cookie')
+    }
+
+    const data = await apiGet<any>('/netease/likes?offset=0&limit=0', { 'X-Netease-Cookie': cookie })
+    const songs = Array.isArray(data?.songs) ? data.songs : []
+    if (!songs.length) {
+      throw new Error('未获取到可播放的喜欢歌曲')
+    }
+
+    await apiDelete('/queue')
+    const result = await enqueueNeteaseTracks(songs, { playFirst: true })
+    if (!result.addedCount) {
+      showActionError(`切换失败：${summarizeBulkEnqueueFailures(result.failed) || '没有歌曲成功加入队列'}`)
+      return
+    }
+
+    if (result.failed.length) {
+      showActionError(`有 ${result.failed.length} 首歌曲添加失败：${summarizeBulkEnqueueFailures(result.failed)}`)
+    }
+  } catch (e: any) {
+    showActionError(`切换播放失败: ${String(e?.message ?? e)}`)
+  } finally {
+    switching.value = false
+  }
+}
+
 function formatDuration(duration: number): string {
   const minutes = Math.floor(duration / 60000)
   const seconds = Math.floor((duration % 60000) / 1000)
@@ -192,14 +227,26 @@ onMounted(() => {
           显示您在网易云音乐中收藏的歌曲
         </span>
       </div>
-      <button 
-        @click="() => load(true)"
-        :disabled="loading"
-        class="btn-secondary text-sm py-1.5 px-3"
-      >
-        <RefreshCw :size="16" :class="{ 'animate-spin': loading }" />
-        <span class="hidden sm:inline">刷新</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          @click="playAllLikes"
+          :disabled="loading || switching || !(likes?.total || likes?.songs?.length)"
+          class="btn-primary text-sm py-1.5 px-3"
+          title="清空当前队列并播放全部喜欢歌曲"
+        >
+          <RefreshCw v-if="switching" :size="16" class="animate-spin" />
+          <Play v-else :size="16" fill="currentColor" />
+          <span class="hidden sm:inline">{{ switching ? '正在切换' : '播放全部' }}</span>
+        </button>
+        <button
+          @click="() => load(true)"
+          :disabled="loading || switching"
+          class="btn-secondary text-sm py-1.5 px-3"
+        >
+          <RefreshCw :size="16" :class="{ 'animate-spin': loading }" />
+          <span class="hidden sm:inline">刷新</span>
+        </button>
+      </div>
     </div>
 
     <!-- Content -->
@@ -332,7 +379,7 @@ onMounted(() => {
           <button
             v-if="hasMore"
             @click="loadMore"
-            :disabled="loading"
+            :disabled="loading || switching"
             class="btn-secondary text-sm py-2 px-4"
           >
             <span>加载更多</span>
