@@ -97,7 +97,7 @@ export async function enqueueNeteaseTracks(
     options.onProgress?.(index + 1, total, title)
 
     try {
-      await apiPost('/queue/netease', buildNeteaseQueuePayload(track, Boolean(options.playFirst && index === 0)))
+      await apiPost('/queue/netease', buildNeteaseQueuePayload(track, Boolean(options.playFirst && addedCount === 0)))
       addedCount++
     } catch (e: any) {
       failed.push({
